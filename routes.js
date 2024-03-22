@@ -37,12 +37,26 @@ router.get("/",
       const firstName = name[0];
       const lastName = name[1];
       customers = await Customer.search(firstName, lastName);
+      console.log("customers", customers);
       customers = await setFullName(customers);
+      //customers = customers.map(c => c.fullName = c.getFullName())
+      console.log("customers", customers);
     }
-    console.log('customers2', customers);
     return res.render("customer_list.jinja", { customers });
 
   });
+
+
+/**Show list of Top 10 customers ordered by num of reservations */
+
+router.get("/top-ten", async function (req, res, next) {
+  const customerData = await Customer.getTopCustomers();
+  const customers = await setFullName(customerData);
+  const top_ten = true;
+
+  return res.render("customer_list.jinja", { customers, top_ten });
+});
+
 
 /** Form to add a new customer. */
 
@@ -68,6 +82,7 @@ router.post("/add/", async function (req, res, next) {
 router.get("/:id/", async function (req, res, next) {
   const customer = await Customer.get(req.params.id);
   const reservations = await customer.getReservations();
+  console.log("customer", customer);
   customer.fullName = await customer.getFullName();
 
   return res.render("customer_detail.jinja", { customer, reservations });
@@ -109,11 +124,14 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
   const notes = req.body.notes;
 
   const reservation = new Reservation({
+    id: 342134,
     customerId,
     startAt,
     numGuests,
     notes,
   });
+
+  console.log("reservation", reservation);
   await reservation.save();
 
   return res.redirect(`/${customerId}/`);
