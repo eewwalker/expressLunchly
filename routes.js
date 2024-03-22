@@ -14,6 +14,10 @@ const router = new express.Router();
 
 router.get("/", async function (req, res, next) {
   const customers = await Customer.all();
+  for (let customer of customers) {
+    customer.fullName = await customer.getFullName();
+  }
+
   return res.render("customer_list.jinja", { customers });
 });
 
@@ -40,7 +44,9 @@ router.post("/add/", async function (req, res, next) {
 
 router.get("/:id/", async function (req, res, next) {
   const customer = await Customer.get(req.params.id);
-
+  for (let customer of customers) {
+    customer.fullName = await customer.getFullName();
+  }
   const reservations = await customer.getReservations();
 
   return res.render("customer_detail.jinja", { customer, reservations });
@@ -50,7 +56,9 @@ router.get("/:id/", async function (req, res, next) {
 
 router.get("/:id/edit/", async function (req, res, next) {
   const customer = await Customer.get(req.params.id);
-
+  for (let customer of customers) {
+    customer.fullName = await customer.getFullName();
+  }
   res.render("customer_edit_form.jinja", { customer });
 });
 
@@ -92,4 +100,17 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
   return res.redirect(`/${customerId}/`);
 });
 
+/**Handle search operation. Returns customers name with
+ * a link if the customer is in db. Else, throws 404 error.
+*/
+
+router.get("/search", async function (req, res, next) {
+  const firstName = req.query.search;
+  console.log("#########################");
+  const customerName = await Customer.search()
+})
+
+
+
 module.exports = router;
+

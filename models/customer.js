@@ -3,6 +3,7 @@
 /** Customer for Lunchly */
 
 const db = require("../db");
+const { NotFoundError } = require("../expressError");
 const Reservation = require("./reservation");
 
 /** Customer of the restaurant. */
@@ -95,6 +96,27 @@ class Customer {
       );
     }
   }
+  async search(fName, lName) {
+    const results = await db.query(
+      `SELECT id,
+                first_name AS "firstName",
+                last_name  AS "lastName"
+          FROM customers
+          WHERE firstName = $1 and lastName = $2`,
+      [fName, lName],
+    );
+    const customer = results.rows[0];
+
+    if (customer === undefined) {
+      throw new NotFoundError("Customer not found");
+    }
+
+
+    const fullName = await getFullName();
+
+    return fullName;
+  }
 }
+
 
 module.exports = Customer;
