@@ -10,16 +10,39 @@ const Reservation = require("./models/reservation");
 
 const router = new express.Router();
 
-/** Homepage: show list of customers. */
-
-router.get("/", async function (req, res, next) {
-  const customers = await Customer.all();
+/** Helper function to put fullName property on instances
+ * Takes array Returns array
+ */
+async function setFullName(customers) {
   for (let customer of customers) {
+    console.log('customer', customer);
     customer.fullName = await customer.getFullName();
   }
+  return customers;
+}
 
-  return res.render("customer_list.jinja", { customers });
-});
+/** Homepage: show list of customers. */
+
+router.get("/",
+  async function (req, res, next) {
+    let customers;
+
+    if (!req.query.search) {
+      const customerData = await Customer.all();
+      customers = await setFullName(customerData);
+
+    } else {
+
+      const name = req.query.search.split(' ');
+      const firstName = name[0];
+      const lastName = name[1];
+      customers = await Customer.search(firstName, lastName);
+      customers = await setFullName(customers);
+    }
+    console.log('customers2', customers);
+    return res.render("customer_list.jinja", { customers });
+
+  });
 
 /** Form to add a new customer. */
 
@@ -44,10 +67,8 @@ router.post("/add/", async function (req, res, next) {
 
 router.get("/:id/", async function (req, res, next) {
   const customer = await Customer.get(req.params.id);
-  for (let customer of customers) {
-    customer.fullName = await customer.getFullName();
-  }
   const reservations = await customer.getReservations();
+  customer.fullName = await customer.getFullName();
 
   return res.render("customer_detail.jinja", { customer, reservations });
 });
@@ -56,9 +77,7 @@ router.get("/:id/", async function (req, res, next) {
 
 router.get("/:id/edit/", async function (req, res, next) {
   const customer = await Customer.get(req.params.id);
-  for (let customer of customers) {
-    customer.fullName = await customer.getFullName();
-  }
+  customer.fullName = await customer.getFullName();
   res.render("customer_edit_form.jinja", { customer });
 });
 
@@ -100,15 +119,6 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
   return res.redirect(`/${customerId}/`);
 });
 
-/**Handle search operation. Returns customers name with
- * a link if the customer is in db. Else, throws 404 error.
-*/
-
-router.get("/search", async function (req, res, next) {
-  const firstName = req.query.search;
-  console.log("#########################");
-  const customerName = await Customer.search()
-})
 
 
 

@@ -57,6 +57,25 @@ class Customer {
     return new Customer(customer);
   }
 
+  /** search for customer   */
+  static async search(fName, lName) {
+    const results = await db.query(
+      `SELECT id,
+                first_name AS "firstName",
+                last_name  AS "lastName"
+          FROM customers
+          WHERE first_name = $1 and last_name = $2`,
+      [fName, lName],
+    );
+    const customer = results.rows[0];
+
+    if (customer === undefined) {
+      throw new NotFoundError("Customer not found");
+    }
+
+    return results.rows.map(c => new Customer(c));
+  }
+
   /** get customer full name */
   async getFullName() {
     return `${this.firstName} ${this.lastName}`;
@@ -96,26 +115,7 @@ class Customer {
       );
     }
   }
-  async search(fName, lName) {
-    const results = await db.query(
-      `SELECT id,
-                first_name AS "firstName",
-                last_name  AS "lastName"
-          FROM customers
-          WHERE firstName = $1 and lastName = $2`,
-      [fName, lName],
-    );
-    const customer = results.rows[0];
 
-    if (customer === undefined) {
-      throw new NotFoundError("Customer not found");
-    }
-
-
-    const fullName = await getFullName();
-
-    return fullName;
-  }
 }
 
 
