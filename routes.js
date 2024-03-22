@@ -32,12 +32,10 @@ router.get("/",
       customers = await setFullName(customerData);
 
     } else {
+      const name = req.query.search;
 
-      const name = req.query.search.split(' ');
-      const firstName = name[0];
-      const lastName = name[1];
-      customers = await Customer.search(firstName, lastName);
-      console.log("customers", customers);
+      customers = await Customer.search(name);
+
       customers = await setFullName(customers);
       //customers = customers.map(c => c.fullName = c.getFullName())
       console.log("customers", customers);
@@ -67,7 +65,10 @@ router.get("/add/", async function (req, res, next) {
 /** Handle adding a new customer. */
 
 router.post("/add/", async function (req, res, next) {
-  if (req.body === undefined) {
+  if (req.body === undefined ||
+    req.body.firstName === '' ||
+    req.body.lastName === '') {
+
     throw new BadRequestError();
   }
   const { firstName, lastName, phone, notes } = req.body;
@@ -115,7 +116,9 @@ router.post("/:id/edit/", async function (req, res, next) {
 /** Handle adding a new reservation. */
 
 router.post("/:id/add-reservation/", async function (req, res, next) {
-  if (req.body === undefined) {
+  if (req.body === undefined ||
+    req.body.startAt === '' ||
+    isNaN(new Date(req.body.startAt))) {
     throw new BadRequestError();
   }
   const customerId = req.params.id;
@@ -124,14 +127,13 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
   const notes = req.body.notes;
 
   const reservation = new Reservation({
-    id: 342134,
     customerId,
     startAt,
     numGuests,
     notes,
   });
 
-  console.log("reservation", reservation);
+
   await reservation.save();
 
   return res.redirect(`/${customerId}/`);

@@ -58,22 +58,24 @@ class Customer {
   }
 
   /** search for customer   */
-  static async search(fName, lName) {
+  static async search(name) {
+    const fullName = name.split(' ');
     const results = await db.query(
       `SELECT id,
                 first_name AS "firstName",
                 last_name  AS "lastName"
           FROM customers
-          WHERE first_name = $1 and last_name = $2`,
-      [fName, lName],
+          WHERE first_name ILIKE $1 OR last_name ILIKE $2`,
+      [`%${fullName[0]}%`, `%${fullName[1]}%`],
     );
-    const customer = results.rows[0];
+      //concat(first_name, ' ', last_name)
+    const customers = results.rows;
 
-    if (customer === undefined) {
+    if (customers === undefined) {
       throw new NotFoundError("Customer not found");
     }
 
-    return results.rows.map(c => new Customer(c));
+    return customers.map(c => new Customer(c));
   }
 
 
@@ -95,7 +97,7 @@ class Customer {
   }
 
   /** get customer full name */
-  async getFullName() {
+  getFullName() {
     return `${this.firstName} ${this.lastName}`;
   }
 
