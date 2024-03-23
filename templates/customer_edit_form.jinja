@@ -1,6 +1,6 @@
 {% extends 'base.jinja' %}
 
-{% block title %}Edit {{ customer.fullName }}{% endblock %}
+{% block title %}Edit {{ customer.getFullName() }}{% endblock %}
 
 {% block content %}
 
@@ -12,7 +12,7 @@
       <input id="first-name"
              class="form-control"
              name="firstName"
-             value="{{ customer.firstName }}">
+             value="{{ customer.getFullName() }}">
     </div>
     <div class="mb-3">
       <label for="last-name">Last Name:</label>

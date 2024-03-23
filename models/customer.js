@@ -59,14 +59,15 @@ class Customer {
 
   /** search for customer   */
   static async search(name) {
-    const fullName = name.split(' ');
     const results = await db.query(
       `SELECT id,
                 first_name AS "firstName",
-                last_name  AS "lastName"
+                last_name  AS "lastName",
+                phone,
+                notes
           FROM customers
-          WHERE first_name ILIKE $1 OR last_name ILIKE $2`,
-      [`%${fullName[0]}%`, `%${fullName[1]}%`],
+          WHERE concat(first_name, ' ', last_name) ILIKE $1`,
+      [`%${name}%`],
     );
       //concat(first_name, ' ', last_name)
     const customers = results.rows;
@@ -86,6 +87,8 @@ class Customer {
       `SELECT c.id,
               c.first_name AS "firstName",
               c.last_name  AS "lastName",
+              phone,
+              notes
               COUNT(r.customer_id) AS "reservationCount"
         FROM customers AS c
         JOIN reservations AS r ON c.id = r.customer_id

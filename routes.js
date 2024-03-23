@@ -13,13 +13,7 @@ const router = new express.Router();
 /** Helper function to put fullName property on instances
  * Takes array Returns array
  */
-async function setFullName(customers) {
-  for (let customer of customers) {
-    console.log('customer', customer);
-    customer.fullName = await customer.getFullName();
-  }
-  return customers;
-}
+
 
 /** Homepage: show list of customers. */
 
@@ -28,17 +22,13 @@ router.get("/",
     let customers;
 
     if (!req.query.search) {
-      const customerData = await Customer.all();
-      customers = await setFullName(customerData);
+      customers = await Customer.all();
+      console.log(customers);
 
     } else {
       const name = req.query.search;
 
       customers = await Customer.search(name);
-
-      customers = await setFullName(customers);
-      //customers = customers.map(c => c.fullName = c.getFullName())
-      console.log("customers", customers);
     }
     return res.render("customer_list.jinja", { customers });
 
@@ -48,8 +38,8 @@ router.get("/",
 /**Show list of Top 10 customers ordered by num of reservations */
 
 router.get("/top-ten", async function (req, res, next) {
-  const customerData = await Customer.getTopCustomers();
-  const customers = await setFullName(customerData);
+  const customers = await Customer.getTopCustomers();
+
   const top_ten = true;
 
   return res.render("customer_list.jinja", { customers, top_ten });
